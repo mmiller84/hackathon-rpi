@@ -3,7 +3,7 @@
     public class BayMonitor : BackgroundService
     {
         private const int READ_INTERVAL_MS = 50;
-        private const int CLEAN_INTERVAL_MS = 2000;
+        private const int CLEAN_INTERVAL_MS = 2500;
         private const int IR_ID_SCAN_CODE = 4;
 
         private readonly BayService _bayService;
@@ -67,8 +67,14 @@
                     code = BitConverter.ToInt16(new byte[] { buffer[++offset], buffer[++offset] }, 0);
                     value = BitConverter.ToInt32(new byte[] { buffer[++offset], buffer[++offset], buffer[++offset], buffer[++offset] }, 0);
 
+                    var validIds = new List<int>()
+                    {
+                        131380,
+                        131381,
+                        131382,
+                    };
 
-                    if (code == IR_ID_SCAN_CODE && value != 2147483647)
+                    if (code == IR_ID_SCAN_CODE && validIds.Contains(value))
                     {
                         //_logger.LogInformation($"Read code {code} and value {value} on device {file}");
 
