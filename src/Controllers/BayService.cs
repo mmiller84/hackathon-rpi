@@ -7,6 +7,11 @@
         public BayService()
         {
             this.bays = new List<Bay>();
+
+            for (int i = 0; i < 4; i++)
+            {
+                this.AddOrUpdate(new Bay() { Id = i });
+            }
         }
 
         public IEnumerable<Bay> Get()
@@ -23,85 +28,14 @@
         {
             var match = this.bays.FirstOrDefault(x => x.Id == bay.Id);
 
-            if (match != null)
-            {
-                match.CarId = bay.CarId;
-            }
-            else
+            if(match == null)
             {
                 this.bays.Add(bay);
+                match = bay;
             }
-        }
-    }
 
-    public class BayMonitor : BackgroundService
-    {
-        private const int REFRESH_INTERVAL_MS = 1000;
-        private readonly BayService _bayService;
-        private readonly ILogger<BayMonitor> _logger;
-
-        public BayMonitor(BayService bayService, ILogger<BayMonitor> logger)
-        {
-            _bayService = bayService ?? throw new ArgumentNullException(nameof(bayService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            while(!stoppingToken.IsCancellationRequested)
-            {
-                this.UpdateState();
-
-                await Task.Delay(REFRESH_INTERVAL_MS);
-            }
-        }
-
-        private void UpdateState()
-        {
-            const string INPUT_FOLDER = "/dev/input";
-            const string INPUT_FORMAT = "event*";
-
-            // check for files at /dev/input/eventX where X is 0,1,2,etc
-            if(Directory.Exists(INPUT_FOLDER))
-            {
-                var files = Directory.GetFiles(INPUT_FOLDER, INPUT_FORMAT);
-                foreach (var file in files)
-                {
-                    var bay = this.Parse(file);
-                    _logger.LogDebug($"Loaded bay {{ Id = {bay.Id}, CarId = {bay.CarId} }}");
-                    _bayService.AddOrUpdate(bay);
-                }
-            }
-            else
-            {
-                _logger.LogDebug($"No input files found at {INPUT_FOLDER}");
-            }
-        }
-
-        private Bay Parse(string file)
-        {
-
-            var input = File.ReadAllBytes(file);
-
-            // const int TIME_OFFSET = 0;
-            //var time = BitConverter.ToInt16(input.Skip(TIME_OFFSET).Take(16).ToArray());
-
-            // const int TYPE_OFFSET = 16;
-            //var type = BitConverter.ToInt16(input.Skip(TYPE_OFFSET).Take(2).ToArray());
-
-            // const int CODE_OFFSET = 18;
-            //var code = BitConverter.ToInt16(input.Skip(CODE_OFFSET).Take(2).ToArray());
-
-            const int VALUE_OFFSET = 20;
-            var value = BitConverter.ToInt32(input.Skip(VALUE_OFFSET).Take(4).ToArray());
-
-            var bay = new Bay()
-            {
-                Id = int.Parse(file.LastOrDefault().ToString()),
-                CarId = value, //???
-            };
-
-            return bay;
+            match.CarId = bay.CarId;
+            match.LastUpdated = DateTime.Now;
         }
     }
 }

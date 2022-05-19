@@ -10,10 +10,10 @@ namespace Baywatch.Controllers
 
         private readonly ILogger<BayController> _logger;
 
-        public BayController(ILogger<BayController> logger)
+        public BayController(ILogger<BayController> logger, BayService bayService)
         {
             _logger = logger;
-            _bayService = new BayService();
+            _bayService = bayService;
         }
 
         [HttpGet(Name = "Get")]
@@ -22,13 +22,16 @@ namespace Baywatch.Controllers
             return _bayService.Get();
         }
 
-        [HttpGet(Name = "Test")]
-        public IEnumerable<Bay> Test()
-        {
-            _bayService.AddOrUpdate(new Bay() { Id = 0, CarId = 10 });
-            _bayService.AddOrUpdate(new Bay() { Id = 1, CarId = 20 });
-            _bayService.AddOrUpdate(new Bay() { Id = 2, CarId = 30 });
-            return this.Get();
-        }
+        //[HttpGet(Name = "Test")]
+        //public IEnumerable<Bay> Test()
+        //{
+        //    _bayService.AddOrUpdate(new Bay() { Id = 0, CarId = 10 });
+        //    _bayService.AddOrUpdate(new Bay() { Id = 1, CarId = 20 });
+        //    _bayService.AddOrUpdate(new Bay() { Id = 2, CarId = 30 });
+        //    _bayService.AddOrUpdate(new Bay() { Id = 2, CarId = 30 });
+        //    _bayService.AddOrUpdate(new Bay() { Id = 2, CarId = 30 });
+        //    _bayService.AddOrUpdate(new Bay() { Id = 2, CarId = 31 });
+        //    return this.Get();
+        //}
     }
 }
