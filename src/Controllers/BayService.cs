@@ -36,7 +36,7 @@
 
     public class BayMonitor : BackgroundService
     {
-        private const int REFRESH_INTERVAL_MS = 100;
+        private const int REFRESH_INTERVAL_MS = 1000;
         private readonly BayService _bayService;
         private readonly ILogger<BayMonitor> _logger;
 
@@ -46,16 +46,14 @@
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while(!stoppingToken.IsCancellationRequested)
             {
                 this.UpdateState();
 
-                Thread.Sleep(REFRESH_INTERVAL_MS);
+                await Task.Delay(REFRESH_INTERVAL_MS);
             }
-
-            return Task.CompletedTask;
         }
 
         private void UpdateState()
@@ -70,10 +68,16 @@
                 foreach (var file in files)
                 {
                     var bay = this.Parse(file);
+                    _logger.LogDebug($"Loaded bay {{ Id = {bay.Id}, CarId = {bay.CarId} }}");
                     _bayService.AddOrUpdate(bay);
                 }
             }
+            else
+            {
+                _logger.LogDebug($"No input files found at {INPUT_FOLDER}");
+            }
         }
+
         private Bay Parse(string file)
         {
 
