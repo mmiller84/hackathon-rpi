@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Baywatch.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     public class BayController : ControllerBase
     {
         private readonly BayService _bayService;
@@ -22,7 +22,7 @@ namespace Baywatch.Controllers
             return _bayService.Get();
         }
 
-        [HttpGet(Name = "Get")]
+        [HttpGet(Name = "Test")]
         public IEnumerable<Bay> Test()
         {
             _bayService.AddOrUpdate(new Bay() { Id = 0, CarId = 10 });
